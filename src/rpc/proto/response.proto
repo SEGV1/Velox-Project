@@ -1,0 +1,21 @@
+// Velox RPC response schema.
+// Defines the Response message returned by veloxd to the interceptor.
+
+syntax = "proto2";
+
+message Response {
+
+  ////////////////////////////////
+  // Nested Message Types
+
+  // 1
+  message Socket {
+    required int32 ret = 1;
+    // postfix _ to avoid name conflict in C language
+    optional int32 errno_ = 2;
+  }
+
+  // 2
+  message Connect {
+    required int32 ret = 1;
+    optional int32 errno_ = 2;
