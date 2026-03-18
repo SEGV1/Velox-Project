@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+message Request {
+
+  ////////////////////////////////
+  // Nested Message Types
+
+  // 1
+  message Socket {
+    required int32 domain = 1;
+    required int32 type = 2;
+    required int32 protocol = 3;
+  }
+
+  // 2
+  message Connect {
+    required bytes addr = 1;
+  }
+
