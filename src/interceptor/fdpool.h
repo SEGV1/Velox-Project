@@ -9,3 +9,23 @@
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef INTERCEPTOR_FDPOOL_H
+#define INTERCEPTOR_FDPOOL_H
+
+#include <stdbool.h>
+
+void ask_veloxd_fd_range();
+
+// for interceptor use
+bool is_assigned_by_velox(int fd);
+int next_avail_fd();
+
+#endif

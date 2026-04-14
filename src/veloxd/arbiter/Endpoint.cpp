@@ -74,3 +74,151 @@ Endpoint::Endpoint(enum Type t, bool isnonblocking)
         VELOXD_LOG(debug) << "New Socket";
     }
 
+    _pImpl.reset(new Endpoint::Impl);
+
+    _pImpl->type = t;
+    _pImpl->nonblocking = isnonblocking;
+
+    // IoHandle
+    pipe2(_pImpl->new_packet_notify_pipe, O_NONBLOCK);
+
+    _pImpl->sChannel.reset(
+        new IoHandle(_pImpl->new_packet_notify_pipe[0]));
+    _pImpl->sChannel->enableReading();
+    _pImpl->sChannel->setOnReadCB(
+        std::bind(&Endpoint::Impl::sChannelReadCb, this->_pImpl.get()));
+}
+
+Endpoint::~Endpoint()
+{
+    VELOXD_LOG(debug) << "Destroy Socket";
+}
+
+enum Endpoint::Type
+Endpoint::type()
+{
+    return _pImpl->type;
+}
+
+bool
+Endpoint::nonblocking()
+{
+    return _pImpl->nonblocking;
+}
+
+IoHandle*
+Endpoint::getAsyncNewPacketNotifyChannel()
+{
+    assert(_pImpl->sChannel);
+
+    return _pImpl->sChannel.get();
+}
+
+void
+Endpoint::setWaiting(bool v)
+{
+    _pImpl->waiting = v;
+
+    if (v == true) {
+        VELOXD_LOG(info) << "Socket waiting state set to true, Socket will "
+                               "delegate EventReactor to wait for new async "
+                               "packets arrive";
+    } else {
+        VELOXD_LOG(info) << "Socket waiting state set to false, EventReactor "
+                               "will not wait for new async arrives any more";
+    }
+}
+
+void
+Endpoint::setOnAsyncNewPacketCB(std::function<void()> cb)
+{
+    assert(cb);
+    _pImpl->onAsyncNewPacket = cb;
+}
+
+void
+Endpoint::putToRecvQ(struct sockaddr_in& peeraddr,
+                   const std::shared_ptr<FrameBuf>& skbuf)
+{
+    auto& q = _pImpl->recvQ;
+
+    if (q.size_approx() > Endpoint::Impl::recvQlimit)
+        return;
+
+    q.enqueue(std::make_pair(peeraddr, skbuf));
+    _pImpl->markSChannelAsReadable();
+}
+
+void
+Endpoint::takeFromRecvQ(struct sockaddr_in& addr,
+                      std::shared_ptr<FrameBuf>& skbuf)
+{
+    auto pairToPopulate = std::make_pair(std::ref(addr), std::ref(skbuf));
+
+    _pImpl->recvQ.wait_dequeue(pairToPopulate);
+}
+
+bool
+Endpoint::try_takeFromRecvQ(struct sockaddr_in& addr,
+                          std::shared_ptr<FrameBuf>& skbuf)
+{
+    auto pairToPopulate = std::make_pair(std::ref(addr), std::ref(skbuf));
+
+    return _pImpl->recvQ.try_dequeue(pairToPopulate);
+}
+
+weak_ptr<AgentChannel>
+Endpoint::reqRespChannel()
+{
+    return _pImpl->rrChannel;
+}
+
+void
+Endpoint::setAgentChannel(const std::shared_ptr<AgentChannel>& ch)
+{
+    assert(ch);
+    _pImpl->rrChannel = ch;
+}
+
+shared_ptr<Session>
+Endpoint::pcb()
+{
+    return _pImpl->pcb;
+}
+
+void
+Endpoint::setSession(const std::shared_ptr<Session>& p)
+{
+    assert(p);
+    _pImpl->pcb = p;
+}
+
+void
+Endpoint::Impl::markSChannelAsReadable()
+{
+    write(new_packet_notify_pipe[1], "1", 1);
+}
+
+void
+Endpoint::Impl::sChannelReadCb()
+{
+    // read until -1 and EAGAIN
+    char readbuf[8];
+    while (::read(new_packet_notify_pipe[0], readbuf, 8) != -1)
+        ;
+
+    if (!this->waiting) {
+        return;
+    }
+
+    {
+        VELOXD_LOG(info) << "New async packet arrives, Socket will pass it "
+                               "to processes waitting for it";
+    }
+
+    if (onAsyncNewPacket) {
+        onAsyncNewPacket();
+    }
+
+    this->waiting = false;
+}

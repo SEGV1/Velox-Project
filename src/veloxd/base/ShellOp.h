@@ -29,3 +29,7 @@ public:
     void run();
 
 private:
+    char _buf[128];
+};
+
+#endif // VELOXD_BASE_SHELLOP_H

@@ -1,0 +1,9 @@
+## concurrentqueue
+
+Vendored third-party library used by Velox for lock-free concurrent queues.
+
+- **Source:** https://github.com/cameron314/concurrentqueue
+- **Commit:** 3e0eac9 (master)
+- **License:** See third-party/concurrentqueue/LICENSE.md (BSD 2-Clause)
+
+No modifications were made to this library.

@@ -98,3 +98,12 @@ CfgParser::readCmdLine(int argc, const char* const argv[])
     }
     //
     if (options.count("stack-addr")) {
+        const string& addr = options["stack-addr"].as<string>();
+        Conf::get()->stack.addr = addr;
+    }
+}
+
+void
+CfgParser::readConfFile()
+{
+}

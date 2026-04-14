@@ -43,3 +43,11 @@ public:
     void enRxQue(const std::shared_ptr<FrameBuf>& skbuf);
 
 private:
+    Ip();
+    ~Ip();
+
+    struct Impl;
+    std::unique_ptr<Impl> _pImpl;
+};
+
+#endif // VELOXD_IP_H

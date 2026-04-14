@@ -16,3 +16,51 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
+#include "veloxd/base/RawMutex.h"
+
+RawMutex::RawMutex()
+    : _holder(0)
+{
+    pthread_mutex_init(&_mutex, NULL);
+}
+
+RawMutex::~RawMutex()
+{
+    pthread_mutex_destroy(&_mutex);
+}
+
+void
+RawMutex::lock()
+{
+    pthread_mutex_lock(&_mutex);
+}
+
+void
+RawMutex::tryLock()
+{
+    pthread_mutex_trylock(&_mutex);
+}
+
+void
+RawMutex::unlock()
+{
+    pthread_mutex_unlock(&_mutex);
+}
+
+bool
+RawMutex::isLockedByThisThread()
+{
+    return pthread_self() == _holder;
+}
+
+MutexScope::MutexScope(RawMutex& lock)
+    : _mutex(lock)
+{
+    _mutex.lock();
+}
+
+MutexScope::~MutexScope()
+{
+    _mutex.unlock();
+}

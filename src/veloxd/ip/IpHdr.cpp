@@ -59,3 +59,16 @@ IpHdrs::protocol(const IpHdr* iphdr)
 
 bool
 IpHdrs::checksum(const IpHdr* iphdr)
+{
+    return true;
+}
+
+__be16
+IpIdGenerator::next()
+{
+    if (last == UINT16_MAX)
+        last = 0;
+
+    int id = ++last;
+    return __cpu_to_be16(id);
+}

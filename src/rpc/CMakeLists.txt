@@ -43,3 +43,21 @@
 #         ${pfile}
 #   )
 # endforeach()
+
+# 4. Compile the generated C/C++ code into a library
+
+file(GLOB rpc_c_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/c_out/*.c
+  )
+add_library(velox_rpc_c ${rpc_c_SRCS})
+set_target_properties(velox_rpc_c PROPERTIES
+  LINKER_LANGUAGE C
+  )
+
+file(GLOB rpc_cpp_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/cpp_out/*.cc
+  )
+add_library(velox_rpc_cpp ${rpc_cpp_SRCS})
+set_target_properties(velox_rpc_cpp PROPERTIES
+  LINKER_LANGUAGE CXX
+  )

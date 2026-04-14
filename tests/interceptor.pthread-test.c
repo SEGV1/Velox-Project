@@ -49,3 +49,20 @@ main(int argc, char *argv[])
     peer.sin_family = AF_INET;
     peer.sin_port   = htons((uint16_t)dest_port);
     inet_pton(AF_INET, dest_ip, &peer.sin_addr);
+
+    if (connect(g_fd, (struct sockaddr *)&peer, sizeof(peer)) < 0) {
+        perror("connect"); return 1;
+    }
+    printf("[pthread-test] connected, fd=%d\n", g_fd);
+
+    pthread_t tid;
+    pthread_create(&tid, NULL, recv_thread, NULL);
+
+    const char *msg = "GET / HTTP/1.0\r\n\r\n";
+    ssize_t sent = send(g_fd, msg, strlen(msg), 0);
+    printf("[pthread-test] sent %zd bytes\n", sent);
+
+    pthread_join(tid, NULL);
+    close(g_fd);
+    return 0;
+}

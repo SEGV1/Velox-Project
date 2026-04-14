@@ -27,3 +27,362 @@ typedef struct Request__Sendto Request__Sendto;
 typedef struct Request__Poll Request__Poll;
 typedef struct Request__Select Request__Select;
 typedef struct Request__Getpeername Request__Getpeername;
+typedef struct Request__Getsockname Request__Getsockname;
+typedef struct Request__Getsockopt Request__Getsockopt;
+typedef struct Request__Setsockopt Request__Setsockopt;
+typedef struct Request__Fcntl Request__Fcntl;
+typedef struct Request__Atstart Request__Atstart;
+
+
+/* --- enums --- */
+
+
+/* --- messages --- */
+
+/*
+ * 1
+ */
+struct  Request__Socket
+{
+  ProtobufCMessage base;
+  int32_t domain;
+  int32_t type;
+  int32_t protocol;
+};
+#define REQUEST__SOCKET__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__socket__descriptor) \
+    , 0, 0, 0 }
+
+
+/*
+ * 2
+ */
+struct  Request__Connect
+{
+  ProtobufCMessage base;
+  ProtobufCBinaryData addr;
+};
+#define REQUEST__CONNECT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__connect__descriptor) \
+    , {0,NULL} }
+
+
+/*
+ * 3
+ */
+struct  Request__Close
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__CLOSE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__close__descriptor) \
+     }
+
+
+/*
+ * 4
+ */
+struct  Request__Recvfrom
+{
+  ProtobufCMessage base;
+  int32_t len;
+  int32_t flags;
+  protobuf_c_boolean requireaddr;
+};
+#define REQUEST__RECVFROM__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__recvfrom__descriptor) \
+    , 0, 0, 0 }
+
+
+/*
+ * 5
+ */
+struct  Request__Sendto
+{
+  ProtobufCMessage base;
+  ProtobufCBinaryData buf;
+  int32_t flags;
+  protobuf_c_boolean has_addr;
+  ProtobufCBinaryData addr;
+};
+#define REQUEST__SENDTO__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__sendto__descriptor) \
+    , {0,NULL}, 0, 0, {0,NULL} }
+
+
+/*
+ * 6
+ */
+struct  Request__Poll
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__POLL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__poll__descriptor) \
+     }
+
+
+/*
+ * 7
+ */
+struct  Request__Select
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__SELECT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__select__descriptor) \
+     }
+
+
+/*
+ * 8
+ */
+struct  Request__Getpeername
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__GETPEERNAME__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__getpeername__descriptor) \
+     }
+
+
+/*
+ * 9
+ */
+struct  Request__Getsockname
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__GETSOCKNAME__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__getsockname__descriptor) \
+     }
+
+
+/*
+ * 10
+ */
+struct  Request__Getsockopt
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__GETSOCKOPT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__getsockopt__descriptor) \
+     }
+
+
+/*
+ * 11
+ */
+struct  Request__Setsockopt
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__SETSOCKOPT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__setsockopt__descriptor) \
+     }
+
+
+/*
+ * 12
+ */
+struct  Request__Fcntl
+{
+  ProtobufCMessage base;
+};
+#define REQUEST__FCNTL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__fcntl__descriptor) \
+     }
+
+
+/*
+ * 16
+ */
+struct  Request__Atstart
+{
+  ProtobufCMessage base;
+  /*
+   * program_invocation_short_name
+   */
+  char *progname;
+};
+#define REQUEST__ATSTART__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__atstart__descriptor) \
+    , NULL }
+
+
+typedef enum {
+  REQUEST__CALLING__NOT_SET = 0,
+  REQUEST__CALLING_SOCKET_CALL = 1,
+  REQUEST__CALLING_CONNECT_CALL = 2,
+  REQUEST__CALLING_CLOSE_CALL = 3,
+  REQUEST__CALLING_RECVFROM_CALL = 4,
+  REQUEST__CALLING_SENDTO_CALL = 5,
+  REQUEST__CALLING_POLL_CALL = 6,
+  REQUEST__CALLING_SELECT_CALL = 7,
+  REQUEST__CALLING_GETPEERNAME_CALL = 8,
+  REQUEST__CALLING_GETSOCKNAME_CALL = 9,
+  REQUEST__CALLING_GETSOCKOPT_CALL = 10,
+  REQUEST__CALLING_SETSOCKOPT_CALL = 11,
+  REQUEST__CALLING_FCNTL_CALL = 12,
+  REQUEST__CALLING_ATSTART_ACTION = 16
+    PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(REQUEST__CALLING__CASE)
+} Request__CallingCase;
+
+struct  Request
+{
+  ProtobufCMessage base;
+  /*
+   * When multiple processes reference the same channel simultaneously (due to fork),
+   * Veloxd uses pid to identify which specific process initiated the Request
+   * pid_t is not always int32
+   */
+  uint64_t pid;
+  Request__CallingCase calling_case;
+  union {
+    Request__Socket *socketcall;
+    Request__Connect *connectcall;
+    Request__Close *closecall;
+    Request__Recvfrom *recvfromcall;
+    Request__Sendto *sendtocall;
+    Request__Poll *pollcall;
+    Request__Select *selectcall;
+    Request__Getpeername *getpeernamecall;
+    Request__Getsockname *getsocknamecall;
+    Request__Getsockopt *getsockoptcall;
+    Request__Setsockopt *setsockoptcall;
+    Request__Fcntl *fcntlcall;
+    Request__Atstart *atstartaction;
+  };
+};
+#define REQUEST__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__descriptor) \
+    , 0, REQUEST__CALLING__NOT_SET, {0} }
+
+
+/* Request__Socket methods */
+void   request__socket__init
+                     (Request__Socket         *message);
+/* Request__Connect methods */
+void   request__connect__init
+                     (Request__Connect         *message);
+/* Request__Close methods */
+void   request__close__init
+                     (Request__Close         *message);
+/* Request__Recvfrom methods */
+void   request__recvfrom__init
+                     (Request__Recvfrom         *message);
+/* Request__Sendto methods */
+void   request__sendto__init
+                     (Request__Sendto         *message);
+/* Request__Poll methods */
+void   request__poll__init
+                     (Request__Poll         *message);
+/* Request__Select methods */
+void   request__select__init
+                     (Request__Select         *message);
+/* Request__Getpeername methods */
+void   request__getpeername__init
+                     (Request__Getpeername         *message);
+/* Request__Getsockname methods */
+void   request__getsockname__init
+                     (Request__Getsockname         *message);
+/* Request__Getsockopt methods */
+void   request__getsockopt__init
+                     (Request__Getsockopt         *message);
+/* Request__Setsockopt methods */
+void   request__setsockopt__init
+                     (Request__Setsockopt         *message);
+/* Request__Fcntl methods */
+void   request__fcntl__init
+                     (Request__Fcntl         *message);
+/* Request__Atstart methods */
+void   request__atstart__init
+                     (Request__Atstart         *message);
+/* Request methods */
+void   request__init
+                     (Request         *message);
+size_t request__get_packed_size
+                     (const Request   *message);
+size_t request__pack
+                     (const Request   *message,
+                      uint8_t             *out);
+size_t request__pack_to_buffer
+                     (const Request   *message,
+                      ProtobufCBuffer     *buffer);
+Request *
+       request__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   request__free_unpacked
+                     (Request *message,
+                      ProtobufCAllocator *allocator);
+/* --- per-message closures --- */
+
+typedef void (*Request__Socket_Closure)
+                 (const Request__Socket *message,
+                  void *closure_data);
+typedef void (*Request__Connect_Closure)
+                 (const Request__Connect *message,
+                  void *closure_data);
+typedef void (*Request__Close_Closure)
+                 (const Request__Close *message,
+                  void *closure_data);
+typedef void (*Request__Recvfrom_Closure)
+                 (const Request__Recvfrom *message,
+                  void *closure_data);
+typedef void (*Request__Sendto_Closure)
+                 (const Request__Sendto *message,
+                  void *closure_data);
+typedef void (*Request__Poll_Closure)
+                 (const Request__Poll *message,
+                  void *closure_data);
+typedef void (*Request__Select_Closure)
+                 (const Request__Select *message,
+                  void *closure_data);
+typedef void (*Request__Getpeername_Closure)
+                 (const Request__Getpeername *message,
+                  void *closure_data);
+typedef void (*Request__Getsockname_Closure)
+                 (const Request__Getsockname *message,
+                  void *closure_data);
+typedef void (*Request__Getsockopt_Closure)
+                 (const Request__Getsockopt *message,
+                  void *closure_data);
+typedef void (*Request__Setsockopt_Closure)
+                 (const Request__Setsockopt *message,
+                  void *closure_data);
+typedef void (*Request__Fcntl_Closure)
+                 (const Request__Fcntl *message,
+                  void *closure_data);
+typedef void (*Request__Atstart_Closure)
+                 (const Request__Atstart *message,
+                  void *closure_data);
+typedef void (*Request_Closure)
+                 (const Request *message,
+                  void *closure_data);
+
+/* --- services --- */
+
+
+/* --- descriptors --- */
+
+extern const ProtobufCMessageDescriptor request__descriptor;
+extern const ProtobufCMessageDescriptor request__socket__descriptor;
+extern const ProtobufCMessageDescriptor request__connect__descriptor;
+extern const ProtobufCMessageDescriptor request__close__descriptor;
+extern const ProtobufCMessageDescriptor request__recvfrom__descriptor;
+extern const ProtobufCMessageDescriptor request__sendto__descriptor;
+extern const ProtobufCMessageDescriptor request__poll__descriptor;
+extern const ProtobufCMessageDescriptor request__select__descriptor;
+extern const ProtobufCMessageDescriptor request__getpeername__descriptor;
+extern const ProtobufCMessageDescriptor request__getsockname__descriptor;
+extern const ProtobufCMessageDescriptor request__getsockopt__descriptor;
+extern const ProtobufCMessageDescriptor request__setsockopt__descriptor;
+extern const ProtobufCMessageDescriptor request__fcntl__descriptor;
+extern const ProtobufCMessageDescriptor request__atstart__descriptor;
+
+PROTOBUF_C__END_DECLS
+
+
+#endif  /* PROTOBUF_C_request_2eproto__INCLUDED */

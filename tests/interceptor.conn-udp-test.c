@@ -32,3 +32,41 @@ main(int argc, char *argv[])
         return 1;
     }
 
+    const char *dest_ip   = argv[1];
+    int         dest_port = atoi(argv[2]);
+
+    int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd < 0) { perror("socket"); return 1; }
+    printf("[conn-udp] socket fd=%d\n", fd);
+
+    struct sockaddr_in peer;
+    memset(&peer, 0, sizeof(peer));
+    peer.sin_family = AF_INET;
+    peer.sin_port   = htons((uint16_t)dest_port);
+    if (inet_pton(AF_INET, dest_ip, &peer.sin_addr) != 1) {
+        fprintf(stderr, "invalid address: %s\n", dest_ip);
+        return 1;
+    }
+    if (connect(fd, (struct sockaddr *)&peer, sizeof(peer)) < 0) {
+        perror("connect"); return 1;
+    }
+
+    struct sockaddr_in local;
+    socklen_t alen = sizeof(local);
+    getsockname(fd, (struct sockaddr *)&local, &alen);
+    print_addr("[conn-udp] local ", &local);
+    alen = sizeof(peer);
+    getpeername(fd, (struct sockaddr *)&peer, &alen);
+    print_addr("[conn-udp] remote", &peer);
+
+    const char *msg = "hello from velox";
+    ssize_t sent = send(fd, msg, strlen(msg), 0);
+    printf("[conn-udp] sent %zd bytes\n", sent);
+
+    char rbuf[512] = { 0 };
+    ssize_t got = recv(fd, rbuf, sizeof(rbuf) - 1, 0);
+    printf("[conn-udp] recv %zd bytes: %s\n", got, rbuf);
+
+    close(fd);
+    return 0;
+}

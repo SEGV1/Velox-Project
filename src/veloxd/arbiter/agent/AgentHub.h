@@ -46,3 +46,12 @@ public:
     );
     // clang-format on
 
+    // AgentHub is responsible for the lifecycle of IoHandle
+    std::shared_ptr<IoHandle> getIoHandle();
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> _pImpl;
+};
+
+#endif // VELOXD_AGENTHUB_H

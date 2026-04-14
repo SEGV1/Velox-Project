@@ -45,3 +45,23 @@ main(int argc, char *argv[])
                           (struct sockaddr *)&dst, sizeof(dst));
     printf("[unconn-udp] sendto %zd bytes\n", sent);
 
+    struct sockaddr_in local;
+    socklen_t alen = sizeof(local);
+    getsockname(fd, (struct sockaddr *)&local, &alen);
+    char lbuf[INET_ADDRSTRLEN] = { 0 };
+    inet_ntop(AF_INET, &local.sin_addr, lbuf, sizeof(lbuf));
+    printf("[unconn-udp] local: %s:%d\n", lbuf, (int)ntohs(local.sin_port));
+
+    char rbuf[512] = { 0 };
+    struct sockaddr_in src;
+    socklen_t slen = sizeof(src);
+    ssize_t got = recvfrom(fd, rbuf, sizeof(rbuf) - 1, 0,
+                           (struct sockaddr *)&src, &slen);
+    char sbuf[INET_ADDRSTRLEN] = { 0 };
+    inet_ntop(AF_INET, &src.sin_addr, sbuf, sizeof(sbuf));
+    printf("[unconn-udp] recvfrom %s:%d — %zd bytes: %s\n",
+           sbuf, (int)ntohs(src.sin_port), got, rbuf);
+
+    close(fd);
+    return 0;
+}

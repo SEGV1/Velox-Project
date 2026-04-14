@@ -37,3 +37,97 @@ using std::unique_ptr;
 using std::make_shared;
 using std::weak_ptr;
 using std::shared_ptr;
+
+struct Udp::Impl
+{
+    // Udp::rx
+    std::list<weak_ptr<Session>> pcbs;
+};
+
+Udp::Udp()
+{
+    _pImpl.reset(new Udp::Impl);
+}
+
+Udp::~Udp() = default;
+
+void
+Udp::init()
+{
+    // Nothing need to do
+}
+
+void
+Udp::start()
+{
+    // Nothing need to do
+}
+
+void
+Udp::stop()
+{
+}
+
+shared_ptr<Session>
+Udp::newSession()
+{
+    const auto& pcb = make_shared<UdpSession>();
+    const auto& weak_pcb = pcb;
+    _pImpl->pcbs.push_back(weak_pcb);
+
+    return pcb;
+}
+
+void
+Udp::removeSession(const std::shared_ptr<const Session>& pcb)
+{
+}
+
+void
+Udp::rx(const shared_ptr<FrameBuf>& skbuf_head)
+{
+    /*  1. len & checksum */
+
+
+    /*  2. demultiplex */
+
+    PseudoHdr* iphdr_ovly = nullptr;
+    UdpHdr* udphdr = nullptr;
+
+    struct in_addr faddr, laddr;
+    __be16 fport, lport;
+
+    iphdr_ovly = (PseudoHdr*)skbuf_head->network_hdr;
+    udphdr = (UdpHdr*)skbuf_head->transport_hdr;
+    memcpy(&faddr, &iphdr_ovly->saddr, sizeof(struct in_addr));
+    memcpy(&laddr, &iphdr_ovly->daddr, sizeof(struct in_addr));
+    fport = udphdr->source;
+    lport = udphdr->dest;
+
+    shared_ptr<Session> pcb;
+    pcb = Sessions::find(_pImpl->pcbs, faddr, fport, laddr, lport);
+    if (!pcb) {
+        {
+            VELOXD_LOG(info) << "No receiver, this UDP packet"
+                                   " {source port = "
+                                << __be16_to_cpu(fport)
+                                << ", dest port = " << __be16_to_cpu(lport)
+                                << "} will be droped ";
+        }
+        return;
+    }
+
+    sockaddr_in peeraddr;
+    bzero(&peeraddr, sizeof(peeraddr));
+    peeraddr.sin_family = AF_INET;
+    peeraddr.sin_addr = *(struct in_addr*)&iphdr_ovly->saddr;
+    peeraddr.sin_port = udphdr->source;
+
+    pcb->recv(peeraddr, skbuf_head);
+
+    {
+        VELOXD_LOG(info) << "UDP Layer Delivered an UDP packet {sport = "
+                            << ntohs(udphdr->source)
+                            << ", dport = " << ntohs(udphdr->dest) << "}";
+    }
+}

@@ -1,5 +1,35 @@
+# Build directories
+build.debug/
+build.release/
 build/
+cmake-build-*/
+
+# Editor temporaries
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+*.orig
+
+# GNU GLOBAL tags
+GPATH
+GRTAGS
+GTAGS
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+
+# Compiled output
 *.o
+*.a
 *.so
-*.log
+*.d
+
+# OS files
 .DS_Store
+Thumbs.db

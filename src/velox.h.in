@@ -1,0 +1,12 @@
+#ifndef VELOX_H
+#define VELOX_H
+
+#define VELOX_VERSION "@PROJECT_VERSION@"
+
+const char*
+velox_version()
+{
+    return VELOX_VERSION;
+}
+
+#endif // VELOX_H

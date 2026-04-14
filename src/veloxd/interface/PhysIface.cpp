@@ -13,3 +13,40 @@
  * General Public License for more details.
 
  * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
+#include "PhysIface.h"
+
+#include <exception>
+
+using std::shared_ptr;
+
+PhysIface::~PhysIface()
+{
+    try {
+        this->close();
+    } catch (const std::exception& e) {
+        // just omit it
+    }
+}
+
+void
+PhysIface::init()
+{
+}
+
+void PhysIface::rx(shared_ptr<FrameBuf>)
+{
+}
+
+void
+PhysIface::tx(const shared_ptr<FrameBuf>&)
+{
+}
+
+void
+PhysIface::close()
+{
+}

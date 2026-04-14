@@ -77,3 +77,5 @@ main(int argc, char *argv[])
         fwrite(rbuf, 1, (size_t)got, stdout);
 
     close(fd);
+    return 0;
+}

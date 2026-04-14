@@ -65,3 +65,61 @@ void
 Tcp::stop()
 {
 }
+
+shared_ptr<Session>
+Tcp::newSession()
+{
+    const auto& pcb = make_shared<TcpSession>();
+    _pImpl->pcbs.push_back(weak_ptr<Session>(pcb));
+
+    return pcb;
+}
+
+void
+Tcp::removeSession(const std::shared_ptr<const Session>& pcb)
+{
+    // TOOD
+}
+
+void
+Tcp::rx(const shared_ptr<FrameBuf>& skbuf_head)
+{
+    /*  1. len & checksum */
+
+
+    /*  2. demultiplex */
+
+    PseudoHdr* iphdr_ovly = nullptr;
+    TcpHdr* tcphdr = nullptr;
+
+    struct in_addr faddr, laddr;
+    __be16 fport, lport;
+
+    iphdr_ovly = (PseudoHdr*)skbuf_head->network_hdr;
+    tcphdr = (TcpHdr*)skbuf_head->transport_hdr;
+    memcpy(&faddr, &iphdr_ovly->saddr, sizeof(struct in_addr));
+    memcpy(&laddr, &iphdr_ovly->daddr, sizeof(struct in_addr));
+    fport = tcphdr->source;
+    lport = tcphdr->dest;
+
+    shared_ptr<Session> pcb;
+    pcb = Sessions::find(_pImpl->pcbs, faddr, fport, laddr, lport);
+    if (!pcb) {
+        // ICMP Type3 Destination Unreachable
+        {
+            VELOXD_LOG(info) << "No receiver, this TCP packet"
+                                   " {source port = "
+                                << __be16_to_cpu(fport)
+                                << ", dest port = " << __be16_to_cpu(lport)
+                                << "} will be droped ";
+        }
+        return;
+    }
+
+    pcb->recv(skbuf_head);
+    {
+        VELOXD_LOG(info) << "TCP Layer Delivered a TCP packet {sport = "
+                            << ntohs(tcphdr->source)
+                            << ", dport = " << ntohs(tcphdr->dest) << "}";
+    }
+}

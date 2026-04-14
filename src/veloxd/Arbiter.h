@@ -20,3 +20,34 @@
 #ifndef VELOXD_ARBITER_H
 #define VELOXD_ARBITER_H
 
+#include <memory>
+
+#include "veloxd/base/Singleton.h"
+
+class FrameBuf;
+class EventReactor;
+class AgentChannel;
+
+class Arbiter : public Singleton<Arbiter>
+{
+    friend class Singleton<Arbiter>;
+
+public:
+    void init();
+    void start();
+    void stop();
+
+    void addRRChannel(const std::shared_ptr<AgentChannel>&);
+    void removeRRChannel(const std::shared_ptr<AgentChannel>&);
+
+    EventReactor* eventLoop();
+
+private:
+    Arbiter();
+    ~Arbiter();
+
+    struct Impl; // pimpl forward declaration
+    std::unique_ptr<Impl> _pImpl;
+};
+
+#endif // VELOXD_ARBITER_H

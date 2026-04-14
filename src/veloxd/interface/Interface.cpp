@@ -19,3 +19,73 @@
 
 #include "veloxd/Interface.h"
 
+#include <boost/thread/thread.hpp>
+#include <memory>
+
+#include "veloxd/Ip.h"
+#include "veloxd/Logging.h"
+#include "veloxd/FrameBuf.h"
+#include "veloxd/interface/PhysIface.h"
+#include "veloxd/interface/TunIface.h"
+
+using std::unique_ptr;
+using std::shared_ptr;
+using std::make_shared;
+using boost::thread;
+
+struct Interface::Impl
+{
+    bool stopflag = false;
+
+    unique_ptr<PhysIface> tunDev;
+};
+
+// Reason that defaulted ctor/dtor definitions here:
+//  https://stackoverflow.com/questions/9954518/stdunique-ptr-with-an-incomplete-type-wont-compile/32269374
+Interface::Interface()
+{
+    _pImpl.reset(new Interface::Impl);
+}
+
+Interface::~Interface() = default;
+
+void
+Interface::init()
+{
+    auto tun = new TunIface();
+    tun->init();
+    _pImpl->tunDev.reset(tun);
+}
+
+void
+Interface::start()
+{
+    VELOXD_LOG(debug) << "Starting TUN device rx_loop_thread";
+    thread rxLoop([this]() {
+        LoggingThreadInitializer i;
+        i.run();
+
+        VELOXD_LOG(info) << "TUN device rx_loop_thread begins to work";
+        while (!this->_pImpl->stopflag) {
+            shared_ptr<FrameBuf> skbuf = make_shared<FrameBuf>();
+            this->_pImpl->tunDev->rx(skbuf);
+            VELOXD_LOG(info) << "Interface Layer received a packet from TUN "
+                                   "device, passing it to IP Layer";
+            Ip::get()->enRxQue(skbuf);
+        }
+    });
+    VELOXD_LOG(debug) << "Started TUN device rx_loop_thread";
+}
+
+void
+Interface::stop()
+{
+    VELOXD_LOG(info) << "Stopping Interface Layer";
+    _pImpl->stopflag = true;
+}
+
+void
+Interface::tx(const shared_ptr<FrameBuf>& skbuf)
+{
+    _pImpl->tunDev->tx(skbuf);
+}
